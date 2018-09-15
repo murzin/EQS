@@ -20,7 +20,6 @@ sub startup {
   my $r = $self->routes;
 
   $r->get('/')->to('base#index');
-
   $r->get('/ajax/table/:table_name')->to('ajax#table_info');
 }
 
@@ -39,4 +38,5 @@ sub error {
     $c->render(json   => {error_code => $err_msg->[0], error_text => $err_msg->[1]},
                status => $code);
 }
+
 1;

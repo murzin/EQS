@@ -2,7 +2,7 @@
 % title  'Welcome!';
 
 <h2><%= $msg %></h2>
-<h4>Select table to view: </h4>
+<h4>Select a table to view:</h4>
 % for my $t (@{$tables}) {
     <div id="<%= $t %>_id"><a href="#" class="table_link" name="<%= $t %>"><%= $t %></a></div>
 % }    
@@ -15,9 +15,10 @@
 <script type="text/javascript">
     var links = document.getElementsByClassName("table_link");
     for (var tl = 0; tl < links.length; tl++) {
-        links[tl].onclick = function(e){
+        links[tl].onclick = function(e) {
             e.stopPropagation();
             e.preventDefault();
+            e.srcElement.style.cursor = 'wait';
             showTable(e.srcElement.name);
             return false;
         }
@@ -26,8 +27,7 @@
     function showTable(table_name) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
-            //if (this.readyState == 4 && (this.status == 200 || this.status == 400))
-            //    doRes(JSON.parse(this.responseText));
+            document.body.style.cursor = 'default';
             if (this.readyState == 4)
                 if (this.status == 200) {
                     renderTable(JSON.parse(this.responseText));
@@ -35,8 +35,7 @@
                     showErrorStatus(table_name);
                 }
         };
-        var url = "/ajax/table/"+table_name;
-        xmlhttp.open("GET", url, true);
+        xmlhttp.open("GET", "/ajax/table/" + table_name, true);
         xmlhttp.send();
     }
 
@@ -45,21 +44,23 @@
         d.getElementById("table_title").innerHTML       = "Table name: " + t.table_name;
         d.getElementById("table_row_count").innerHTML   = "Total rows: " + t.row_count;
         d.getElementById("table_row_note").innerHTML    = t.row_count_note;
-        var tableHTML = '<table id="renderedTable"><tr id="trowHeader">';
+
+        var tableHTML = '<table id="renderedTable"><tr id="rowHeader">';
         for (var f in t.field_names) {
-            tableHTML += "<th>"+t.field_names[f]+"</th>";
+            tableHTML += "<th>" + t.field_names[f] + "</th>";
         }
-        tableHTML += "</tr>";
+        tableHTML += "</tr>\n";
 
         for (var r in t.rows) {
-            tableHTML += "<tr>";
+            tableHTML += '<tr id="rowSimple">';
             for (v in t.rows[r]) {
-                tableHTML += "<td>"+t.rows[r][v]+"</td>";
+                tableHTML += "<td>" + t.rows[r][v] + "</td>";
             }
-            tableHTML += "</tr>";
+            tableHTML += "</tr>\n";
         }
         tableHTML += "</table>";
         d.getElementById("table_content").innerHTML = tableHTML;
+        noWaitonLinks();
     }
 
     function showErrorStatus(t) {
@@ -68,6 +69,12 @@
         d.getElementById("table_row_count").innerHTML   = "";
         d.getElementById("table_row_note").innerHTML    = "";
         d.getElementById("table_content").innerHTML     = "<div class=\"error\">Request Error for table "+t+"</div>";
+        noWaitonLinks();
+    }
+    function noWaitonLinks() {
+        var links = document.getElementsByClassName("table_link");
+        for (var tl = 0; tl < links.length; tl++) {
+            links[tl].style.cursor = "pointer";
+        }
     }
 </script>
-

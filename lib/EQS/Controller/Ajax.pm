@@ -21,7 +21,6 @@ sub table_info {
   my $rows = $c->app->dbh->selectall_arrayref("select @$fields from $table_name limit 10")
       or return $c->app->error($c, 400, [dbError => $DBI::errstr]);
 
-
   $c->render(json => {
       table_name        => $table_name,
       row_count         => $row_count->[0],
