@@ -1,0 +1,73 @@
+% layout 'default';
+% title  'Welcome!';
+
+<h2><%= $msg %></h2>
+<h4>Select table to view: </h4>
+% for my $t (@{$tables}) {
+    <div id="<%= $t %>_id"><a href="#" class="table_link" name="<%= $t %>"><%= $t %></a></div>
+% }    
+<hr>
+<div id="table_title"></div>
+<div id="table_row_count"></div>
+<div id="table_row_note"></div>
+<div id="table_content"></div>
+
+<script type="text/javascript">
+    var links = document.getElementsByClassName("table_link");
+    for (var tl = 0; tl < links.length; tl++) {
+        links[tl].onclick = function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            showTable(e.srcElement.name);
+            return false;
+        }
+    }
+
+    function showTable(table_name) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            //if (this.readyState == 4 && (this.status == 200 || this.status == 400))
+            //    doRes(JSON.parse(this.responseText));
+            if (this.readyState == 4)
+                if (this.status == 200) {
+                    renderTable(JSON.parse(this.responseText));
+                } else {
+                    showErrorStatus(table_name);
+                }
+        };
+        var url = "/ajax/table/"+table_name;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+    }
+
+    function renderTable(t) {
+        var d = document;
+        d.getElementById("table_title").innerHTML       = "Table name: " + t.table_name;
+        d.getElementById("table_row_count").innerHTML   = "Total rows: " + t.row_count;
+        d.getElementById("table_row_note").innerHTML    = t.row_count_note;
+        var tableHTML = '<table id="renderedTable"><tr id="trowHeader">';
+        for (var f in t.field_names) {
+            tableHTML += "<th>"+t.field_names[f]+"</th>";
+        }
+        tableHTML += "</tr>";
+
+        for (var r in t.rows) {
+            tableHTML += "<tr>";
+            for (v in t.rows[r]) {
+                tableHTML += "<td>"+t.rows[r][v]+"</td>";
+            }
+            tableHTML += "</tr>";
+        }
+        tableHTML += "</table>";
+        d.getElementById("table_content").innerHTML = tableHTML;
+    }
+
+    function showErrorStatus(t) {
+        var d = document;
+        d.getElementById("table_title").innerHTML       = "";
+        d.getElementById("table_row_count").innerHTML   = "";
+        d.getElementById("table_row_note").innerHTML    = "";
+        d.getElementById("table_content").innerHTML     = "<div class=\"error\">Request Error for table "+t+"</div>";
+    }
+</script>
+
